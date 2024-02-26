@@ -1,0 +1,16 @@
+<?php
+/**
+ * @var IWD\CheckoutConnector\Block\Shortcut\PayPalButton $block
+ */
+$containerId = $block->getContainerId();
+$paypalShoppingcartJsBlock = $block->getChildBlock("paypal.shoppingcart.js");
+$paypalShoppingcartJsBlock->setLocalContainerId($containerId);
+$paypalShoppingcartJsBlock->setBlockName('paypalShoppingcartJs');
+?>
+
+<?php if($block->getPaypalStatus()): ?>
+    <?= $block->getChildHtml('paypal.shoppingcart.js'); ?>
+    <div class="iwd-paypal-button-wrapper" data-block-name="paypalShoppingcartJs">
+        <div id='<?= $containerId ?>' class="hyva iwd-paypal-wrapper" data-block-name="paypalShoppingcartJs"></div>
+    </div>
+<?php endif; ?>

@@ -1,0 +1,16 @@
+<?php
+/**
+ * @var IWD\CheckoutConnector\Block\Shortcut\PayPalButton $block
+ */
+$containerId = $block->getContainerId();
+$paypalMinicartJsBlock =  $block->getChildBlock("paypal.minicart.js");
+$paypalMinicartJsBlock->setLocalContainerId($containerId);
+$paypalMinicartJsBlock->setBlockName('paypalMinicartJs');
+?>
+
+<?php if($block->getPaypalStatus()): ?>
+    <?= $block->getChildHtml("paypal.minicart.js"); ?>
+    <div class="relative grid gap-6 px-4 py-6 bg-white sm:gap-8 sm:px-6 iwd-paypal-button-wrapper" data-block-name="paypalMinicartJs">
+        <div id='<?= $containerId ?>' class="hyva iwd-paypal-wrapper" data-block-name="paypalMinicartJs"></div>
+    </div>
+<?php endif; ?>

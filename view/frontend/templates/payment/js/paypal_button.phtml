@@ -1,0 +1,137 @@
+<?php
+/**
+ * @var IWD\CheckoutHyvaPatch\Block\Cart\Payment\Js $block
+ */
+?>
+
+<script>
+    if (typeof window.paypal_button_config === 'undefined') {
+        window.paypal_button_config = [];
+    }
+
+    window.paypal_button_config.push({'<?= $block->getBlockName() ?>' : JSON.parse('<?= $block->getJsonConfig($block->getLocalContainerId()) ?>')['IWD_CheckoutConnector/js/view/payment/shortcut/iwd_paypal_button']});
+
+
+    if (typeof window.paypal === 'undefined') {
+        let scriptParams = {
+            "client-id": "<?= $block->getClientId() ?>",
+            "commit": "false",
+            "intent": "authorize",
+            "components": "buttons,messages",
+            "vault": "false",
+            "merchant-id": "<?= $block->getMerchantId() ? $block->getMerchantId() : '' ?>",
+            "currency": "<?= $block->getCurrencyCode() ?>",
+            "data-partner-attribution-id": "<?= $block->getPayPalBnCode() ?>"
+        };
+
+        let enableFunding = "<?= $block->getEnableFundingParam() ?>";
+        if(enableFunding !== "") {
+            scriptParams['enable-funding'] = enableFunding;
+        }
+
+        window.paypalLoadScript(scriptParams);
+    }
+
+    function paypalButton(config) {
+        if (window.paypal) {
+            let paypal = window.paypal,
+                clickedFundingSource = 'paypal';
+
+            if(document.getElementById(config.containerId).innerHTML.length) {
+                return;
+            }
+
+            paypal.Buttons({
+                fundingSource: config.creditStatus == 1 || config.venmoStatus == 1 ? '' : 'paypal',
+                style: {
+                    layout: 'horizontal',
+                    size: 'responsive',
+                    shape: config.btnShape,
+                    color: config.btnColor,
+                    height: 45,
+                    fundingicons: false,
+                    tagline: false,
+                },
+
+                onClick: function(data)  {
+                    clickedFundingSource = data.fundingSource;
+                },
+
+                createOrder: function(data, actions) {
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: config.grandTotalAmount
+                            }
+                        }]
+                    });
+                },
+
+                onApprove: function(data) {
+                    window.location.href = config.checkoutPageUrl + '?paypal_order_id=' + data.orderID
+                        + '&paypal_funding_source=' + clickedFundingSource;
+                }
+            }).render('#' + config.containerId);
+        }
+    }
+    
+    window.addEventListener('load', function() {
+        for(var e = 0; e < window.paypal_button_config.length; e++) {
+            let config = window.paypal_button_config[e];
+            if(config['<?= $block->getBlockName() ?>']) {
+                paypalButton(config['<?= $block->getBlockName() ?>']);
+            }
+        }
+
+        initPrivateContent();
+    });
+
+    function initPrivateContent() {
+        window.addEventListener('private-content-loaded', function(event) {
+            try {
+                if(window.paypal_button_config) {
+                    let cart = event.detail.data.cart,
+                        paypalButtonElements = document.getElementsByClassName("hyva iwd-paypal-wrapper"),
+                        grandTotalAmount = cart.subtotalAmount.substring(0, cart.subtotalAmount.length - 2);
+
+                    if(paypalButtonElements.length) {
+                        for(var e = 0; e < paypalButtonElements.length; e++) { // For each element
+                            var elt = paypalButtonElements[e];
+
+                            if(!elt.innerHTML.length) {
+                                let blockName = elt.getAttribute('data-block-name'),
+                                    containerId = elt.id;
+
+                                for(var j = 0; j < window.paypal_button_config.length; j++) {
+                                    let config = window.paypal_button_config[j];
+                                    if(config[blockName] && config[blockName].containerId == containerId && cart.items.length) {
+                                        config[blockName]['grandTotalAmount'] = grandTotalAmount;
+                                        paypalButton(config[blockName]);
+                                    }
+                                }
+                            }
+                        }
+
+                        if(!cart.items.length) {
+                            for(var e = 0; e < paypalButtonElements.length; e++) { // For each element
+                                var elt = paypalButtonElements[e];
+                                elt.innerHTML = '';
+                            }
+                        }
+                    }
+
+                    // Update Mini Cart Button
+                    if(cart.items.length) {
+                        if(window.paypal_button_config[0] && window.paypal_button_config[0]['paypalMinicartJs']) {
+                            window.paypal_button_config[0]['paypalMinicartJs']['grandTotalAmount'] = grandTotalAmount;
+                            paypalButton(window.paypal_button_config[0]['paypalMinicartJs']);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        });
+    }
+    
+</script>

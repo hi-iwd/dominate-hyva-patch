@@ -1,0 +1,10 @@
+<?php
+/**
+ * @var IWD\CheckoutHyvaPatch\Block\Cart\Payment\PayPalCreditMsg $block
+ */
+?>
+
+<div class="relative grid gap-6 px-4 bg-white sm:gap-8 sm:px-6 iwd-paypal-credit-msg-wrapper">
+    <div class="iwd-paypal-credit-msg"></div>
+</div>
+<?= $block->getChildHtml("paypal.minicart.creditmsg.js"); ?>

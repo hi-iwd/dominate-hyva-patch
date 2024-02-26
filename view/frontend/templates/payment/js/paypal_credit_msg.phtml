@@ -1,0 +1,83 @@
+<?php
+/**
+ * @var IWD\CheckoutHyvaPatch\Block\Cart\Payment\PayPalCreditMsg $block
+ */
+?>
+
+<script>
+    window.paypal_credit_msg_config = JSON.parse('<?= $block->getPayPalCreditMsgConfig() ?>');
+
+    function paypalCreditMsg() {
+        if (window.paypal) {
+            let paypal = window.paypal,
+                creditMsgConfig = window.paypal_credit_msg_config,
+                logoConfig = {type: creditMsgConfig.logo_type},
+                amount = creditMsgConfig.subtotal,
+                element = '.iwd-paypal-credit-msg:not([data-pp-id])';
+
+            if(!document.querySelector(element)) {
+                return;
+            }
+
+            if(creditMsgConfig.logo_type === 'alternative' || creditMsgConfig.logo_type === 'primary') {
+                logoConfig.position = creditMsgConfig.logo_position;
+            }
+
+            if(amount > 0 && creditMsgConfig.status == 1) {
+                paypal.Messages({
+                    amount: amount,
+                    pageType: 'cart',
+                    style: {
+                        layout: 'text',
+                        logo: logoConfig,
+                        text: {
+                            color: creditMsgConfig.text_color
+                        }
+                    },
+                }).render(element);
+            }
+        }
+    }
+
+    window.addEventListener('load', function() {
+        paypalCreditMsg();
+    });
+
+    initPrivateContent();
+
+    function initPrivateContent() {
+        window.addEventListener('private-content-loaded', function(event) {
+            try {
+                if(window.paypal_credit_msg_config) {
+                    let cart = event.detail.data.cart,
+                        subtotal = cart.subtotalAmount.substring(0, cart.subtotalAmount.length - 2);
+
+                    window.paypal_credit_msg_config.subtotal = subtotal;
+
+                    let paypalCreditMsgWrappers = document.getElementsByClassName('iwd-paypal-credit-msg-wrapper');
+                    let paypalCreditMsgElements = document.getElementsByClassName("iwd-paypal-credit-msg");
+
+                    for(var e = 0; e < paypalCreditMsgElements.length; e++) { // For each element
+                        var elt = paypalCreditMsgElements[e];
+                        elt.remove();
+                    }
+
+                    for(var e = 0; e < paypalCreditMsgWrappers.length; e++) { // For each element
+                        var elt = paypalCreditMsgWrappers[e];
+                        if(!elt.getElementsByClassName('iwd-paypal-credit-msg').length) {
+                            var paypalCreditMsgChild = document.createElement('div');
+                            paypalCreditMsgChild.classList.value = 'iwd-paypal-credit-msg';
+                            elt.appendChild(paypalCreditMsgChild);
+                        }
+                    }
+
+                    if(cart.items.length) {
+                        paypalCreditMsg();
+                    }
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        });
+    }
+</script>

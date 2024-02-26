@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+<body>
+    <referenceContainer name="cart-drawer.bottom">
+        <block class="IWD\CheckoutHyvaPatch\Block\Cart\Payment\PayPalCreditMsg"
+               name="checkout.cart.totals.paypal.minicart.msg"
+               template="IWD_CheckoutHyvaPatch::payment/mini-cart/paypal_credit_msg.phtml"
+               after="checkout.cart.totals">
+            <block class="IWD\CheckoutHyvaPatch\Block\Cart\Payment\PayPalCreditMsg"
+                   name="paypal.minicart.creditmsg.js"
+                   template="IWD_CheckoutHyvaPatch::payment/js/paypal_credit_msg.phtml"
+                   after="-" />
+        </block>
+
+        <block class="IWD\CheckoutConnector\Block\Shortcut\PayPalButton"
+               name="checkout.cart.totals.paypal.minicart.button"
+               template="IWD_CheckoutHyvaPatch::payment/mini-cart/paypal_button.phtml"
+               after="-">
+            <block class="IWD\CheckoutHyvaPatch\Block\Cart\Payment\Js"
+                   name="paypal.minicart.js"
+                   template="IWD_CheckoutHyvaPatch::payment/js/paypal_button.phtml"
+                   after="-" />
+        </block>
+    </referenceContainer>
+</body>
+</page>
