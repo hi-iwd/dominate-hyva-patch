@@ -64,6 +64,6 @@ class PayPalCreditMsg extends Template
      */
     public function priceFormat($price)
     {
-        return number_format($price, 2, '.', '');
+        return number_format($price ?? 0, 2, '.', '');
     }
 }
